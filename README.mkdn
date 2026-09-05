@@ -1,6 +1,50 @@
 Xiaomi Dolby
 ==============
 
+Fork notes (Atmos verified working on sm8450 / mondrian)
+---------------------------------------------------------
+This fork replaces the community proprietary blob set with the matched,
+proven-working set from `xiaomi-sm8450-mondrian/vendor_xiaomi_dolby`
+(same maintainer group behind the RisingOS build where Dolby Atmos is
+confirmed working on this chipset). The original `Dolby-Vision-2.4` branch's
+blobs are ABI-incompatible with a modern (Android 16 / API 36) AOSP tree —
+swapping in this matched set is what actually gets Atmos working.
+
+**Dolby Atmos (DAP audio effect): confirmed working.** Verified on a real
+device (Xiaomi/POCO mondrian, sm8450) — toggling the effect in the
+`DolbyAtmos` app audibly changes playback, with `libswdap.so` (software DAP,
+not `libhwdap.so`) doing the processing. The hardware DAP path
+(`libhwdap.so`) requires a DSP module graph that a custom-ROM kernel/vendor
+combo typically doesn't have (stock's does) — it "enables" without error but
+processes nothing, so **use the software path (`libswdap.so`) for `dap` in
+your device tree's `audio_effects.xml`, not `libhwdap.so`.**
+
+**Dolby Vision (video decode): included but unverified — likely needs kernel
+changes.** The full DV codec2 cluster and matching `libcodec2_hidl_shim`
+(bridges an old `objcpy()` symbol name to the current AOSP
+`libcodec2_hidl@1.0`) are present and build cleanly, and stock's blobs are
+used throughout. On the device this was developed against, actual video
+decode fails at the V4L2 pixel-format-negotiation step between the vendor
+Codec2 HW-decoder service and the kernel video driver
+(`QC2V4l2Codec: ? is not a supported pixel format!`) — every userspace
+component (Dolby wrapper, QTI decoder service, DSP firmware) was verified
+byte-identical to stock, so the gap is below the vendor blob layer
+(kernel driver version/patches). If you get this working on another device,
+a PR with what fixed it would be very welcome.
+
+What you need in your device tree (separate repo, not included here):
+- `audio_effects.xml`: declare `<library name="dap" path="libswdap.so"/>`
+  (plus `dvl`/`libdlbvol.so`, `gamedap`/`libswgamedap.so`,
+  `vqe`/`libswvqe.so` and their `<effect>` entries — see this fork's commit
+  history for the exact block) in your SoC-common audio config.
+- Vendor's `c2_manifest_vendor.xml`: only add `<instance>dolby</instance>`
+  to the `android.hardware.media.c2` `IComponentStore` if you actually set
+  `TARGET_INCLUDES_DolbyVision := true` and `dolbycodec2` is running —
+  otherwise `mediaserver` will abort with
+  `Codec2 service "dolby" does not have IConfigurable`.
+- `PRODUCT_PACKAGES += DolbyAtmos` (PixelOS-AOSP's native app) or another
+  app using `AudioEffect` with UUID `9d4921da-8225-4f29-aefa-39537a04bcaa`.
+
 Getting Started
 ---------------
 For dolby media codecs to work add this line in your media codecs config (should be in vendor partition) :-

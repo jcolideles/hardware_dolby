@@ -74,10 +74,6 @@ PRODUCT_VENDOR_PROPERTIES += \
        ro.audio.stereo_spatialization_enabled=true \
        persist.vendor.audio.spatializer.speaker_enabled=true
 
-# Spatial Audio Proprietary blobs
-PRODUCT_PACKAGES += \
-    libspatialaudio
-
 # Media (C2)
 PRODUCT_PACKAGES += \
     android.hardware.media.c2@1.0.vendor \
@@ -134,7 +130,7 @@ PRODUCT_PACKAGES += \
     libdlbpreg \
     libstagefright_foundation-dolby \
     libdlbvol \
-    libhwdap \
+    libspatializerparamstorage \
     libswdap \
     libswgamedap \
     libswvqe \
@@ -170,19 +166,16 @@ PRODUCT_PACKAGES += \
     libdolbyvision \
     dolbycodec2
 
-PRODUCT_PACKAGES += \
-    libstagefright_foundation-swiitchoff
-
-PRODUCT_COPY_FILES += \
-    $(DOLBY_PATH)/proprietary/vendor/etc/init/vendor.dolby.media.dvs-service-vision.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/vendor.dolby.media.dvs-service-vision.rc
-
-PRODUCT_PACKAGES += \
-    vendor.dolby.dvs@1.0 \
-    vendor.dolby.media.dvs-service.xml \
-    dvs-hal-service
-
-# Shim
+# Shim: stock's 32-bit c2.dolby.client.so/c2.dolby.hevc.dec.so etc. were built
+# against an older libcodec2_hidl@1.0 "utils::objcpy" symbol name than our
+# current AOSP tree exports; this shim forwards the old name to the new one.
 PRODUCT_PACKAGES += \
     libcodec2_hidl_shim.vendor
+
+# NOTE: the DV blobs above are mondrian's own stock ones. Stock's Dolby Vision
+# design is just dolbycodec2 serving the "dolby" Codec2 store with the c2.dolby.*
+# components -- it has no dvs-hal-service / vendor.dolby.dvs@1.0. Those
+# community-only pieces are deliberately left out: mixing them with the stock
+# libs is what made dolbycodec2 SIGSEGV and take mediaserver down with it.
 endif
 
