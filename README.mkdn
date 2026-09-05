@@ -19,19 +19,7 @@ combo typically doesn't have (stock's does) — it "enables" without error but
 processes nothing, so **use the software path (`libswdap.so`) for `dap` in
 your device tree's `audio_effects.xml`, not `libhwdap.so`.**
 
-**Dolby Vision (video decode): removed.** An earlier version of this fork
-carried the full DV codec2 cluster (`c2.dolby.*`, `dolbycodec2`,
-`libcodec2_hidl_shim`) using stock's own blobs, and got as far as a stable,
-registered `c2.dolby.decoder.hevc` component with HDR capability correctly
-advertised — but actual video decode failed at the V4L2
-pixel-format-negotiation step between the vendor Codec2 HW-decoder service
-and the kernel video driver (`QC2V4l2Codec: ? is not a supported pixel
-format!`). Every userspace component involved (Dolby wrapper, QTI decoder
-service, DSP firmware) was verified byte-identical to stock, so the gap is
-below the vendor blob layer (kernel driver version/patches) and wasn't
-safely fixable here. Rather than ship a DV path that builds but can't
-actually decode anything, it's been stripped out entirely — this fork now
-only carries Dolby Atmos.
+This fork carries Dolby Atmos only.
 
 What you need in your device tree (separate repo, not included here):
 - `audio_effects.xml`: declare `<library name="dap" path="libswdap.so"/>`
@@ -87,19 +75,11 @@ At the end an example commit to properly implement it in your device tree could 
 
 **2)** [**Enable Spatial Audio**](https://github.com/Spanish-or-Vanish/android_device_xiaomi_sm8350-common/commit/035849721cacf5746bc554407ae2ae7c12edd865)
 
-**3)** [**Enable Dolby Vision**](https://github.com/Spanish-or-Vanish/android_device_xiaomi_sm8350-common/commit/97e6c84e3e2390c7fa8acecc3cdedd70b5aed07d)
-**or**
-[**Enable Dolby Vision**](https://github.com/swiitchOFF-miatoll/device_xiaomi_sm6250-common/commit/361a3c11663257999e21cb02eee9530bfec16f33)
-**or**
-[**Disable Dolby Vision**](https://github.com/Spanish-or-Vanish/android_device_xiaomi_sm8350-common/commit/41411ab3e6caabe8a304b03d6badcd8bf2211adb)
- 
 **Note: Flags are needed after** [**this**](https://github.com/swiitch-OFF-Lab/hardware_dolby/commit/a29e40ab583f40893552d917c6d4deddac125b01)
 
 **>** [**For OEM Dolby App**](https://github.com/swiitchOFF-miatoll/device_xiaomi_miatoll/commit/7799b7b654dde27862062d5b44d7e58407a0e94b) `TARGET_INCLUDES_OEM_App := true`
 
 **>** **For OSS Dolby App** [**Need this**](https://github.com/swiitch-OFF-Lab/packages_apps_DolbyUI/tree/a) **or** [**Need this**](https://github.com/swiitch-OFF-Lab/packages_apps_DolbyUI/tree/16.0) **and skip/ignore/don't use OEM Dolby App flag**
-
-**>** [**For Dolby Vision**](https://github.com/swiitchOFF-miatoll/device_xiaomi_miatoll/commit/5031c093bfeb5dcd86b45c114c12a4e626fcb48f) `TARGET_INCLUDES_DolbyVision := true`
 
 
 # Credits:
