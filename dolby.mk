@@ -26,7 +26,6 @@ AUDIO_FEATURE_ENABLED_DS2_DOLBY_DAP := true
 
 # SEPolicy
 BOARD_VENDOR_SEPOLICY_DIRS += $(DOLBY_PATH)/sepolicy/vendor
-BOARD_VENDOR_SEPOLICY_DIRS += $(DOLBY_PATH)/sepolicy/vendor/vision
 
 # HIDL
 DEVICE_FRAMEWORK_COMPATIBILITY_MATRIX_FILE += $(DOLBY_PATH)/dolby_framework_matrix.xml
@@ -146,36 +145,4 @@ PRODUCT_PACKAGES += \
     vendor.dolby.hardware.dms@2.0-impl \
     vendor.dolby.hardware.dms@2.0-service \
     vendor.dolby.media.c2@1.0-service
-
-ifeq ($(TARGET_INCLUDES_DolbyVision),true)
-# Dolby vision Proprietary blobs
-PRODUCT_COPY_FILES += \
-    $(DOLBY_PATH)/proprietary/vendor/etc/dolby_vision.cfg:$(TARGET_COPY_OUT_VENDOR)/etc/dolby_vision.cfg \
-    $(DOLBY_PATH)/proprietary/vendor/etc/init/vendor.dolbyvision.media.c2@1.0-service.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/vendor.dolbyvision.media.c2@1.0-service.rc
-
-PRODUCT_PACKAGES += \
-    c2.dolby.avc.dec \
-    c2.dolby.avc.sec.dec \
-    c2.dolby.client \
-    c2.dolby.egl \
-    c2.dolby.hevc.dec \
-    c2.dolby.hevc.enc \
-    c2.dolby.hevc.sec.dec \
-    c2.dolby.store \
-    libdolbyottcameracontrol \
-    libdolbyvision \
-    dolbycodec2
-
-# Shim: stock's 32-bit c2.dolby.client.so/c2.dolby.hevc.dec.so etc. were built
-# against an older libcodec2_hidl@1.0 "utils::objcpy" symbol name than our
-# current AOSP tree exports; this shim forwards the old name to the new one.
-PRODUCT_PACKAGES += \
-    libcodec2_hidl_shim.vendor
-
-# NOTE: the DV blobs above are mondrian's own stock ones. Stock's Dolby Vision
-# design is just dolbycodec2 serving the "dolby" Codec2 store with the c2.dolby.*
-# components -- it has no dvs-hal-service / vendor.dolby.dvs@1.0. Those
-# community-only pieces are deliberately left out: mixing them with the stock
-# libs is what made dolbycodec2 SIGSEGV and take mediaserver down with it.
-endif
 

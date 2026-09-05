@@ -1,4 +1,0 @@
-# Dolby Vision
-attribute hal_dvs;
-attribute hal_dvs_client;
-attribute hal_dvs_server;
